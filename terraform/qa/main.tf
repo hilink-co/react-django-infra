@@ -8,12 +8,14 @@ data "aws_availability_zones" "available" {
 locals {
   name = "react-django-infra"
   cluster_name = "react-django-infra-eks-${random_string.suffix.result}"
-  database_name = "react-django-infra-db-${random_string.suffix.result}"
+  database_identifier = "react-django-infra-db"
+  database_name = "djangoBackend"
 }
 
 resource "random_string" "suffix" {
   length  = 4
   special = false
+  lower = true
 }
 
 module "vpc" {
@@ -27,10 +29,12 @@ module "vpc" {
 
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
   public_subnets  = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+  database_subnets  = ["10.0.7.0/24", "10.0.8.0/24", "10.0.9.0/24"]
 
   enable_nat_gateway   = true
   single_nat_gateway   = true
   enable_dns_hostnames = true
+  create_database_subnet_group = true
 
   public_subnet_tags = {
     "kubernetes.io/cluster/${local.cluster_name}" = "shared"
@@ -42,7 +46,6 @@ module "vpc" {
     "kubernetes.io/role/internal-elb"             = 1
   }
 
-  create_database_subnet_group = true
 }
 
 module "security-group" {
@@ -52,6 +55,17 @@ module "security-group" {
   name        = local.name
   description = "seucrity group for MySQL"
   vpc_id      = module.vpc.vpc_id
+
+  # ingress
+  ingress_with_cidr_blocks = [
+    {
+      from_port   = 3306
+      to_port     = 3306
+      protocol    = "tcp"
+      description = "MySQL access from within VPC"
+      cidr_blocks = module.vpc.vpc_cidr_block
+    },
+  ]
 }
 
 module "eks" {
@@ -97,7 +111,7 @@ module "db" {
   source = "terraform-aws-modules/rds/aws"
 
   # Disable creation of RDS instance(s)
-  create_db_instance = false
+  create_db_instance = true
 
   # Disable creation of option group - provide an option group or default AWS default
   create_db_option_group = false
@@ -111,15 +125,15 @@ module "db" {
   # Enable creation of monitoring IAM role
   create_monitoring_role = false
 
-
-  identifier = local.database_name
+  identifier = local.database_identifier
 
   engine = "mysql"
   engine_version    = "8.0"
   family = "mysql8.0" # DB parameter group
   major_engine_version = "8.0" # DB option group
   instance_class = "db.t4g.micro"
-  allocated_storage = 1
+  allocated_storage = 20 # 20 GB
+  # max_allocated_storage = 100
 
   db_name = local.database_name
   username = "root"
@@ -127,6 +141,7 @@ module "db" {
 
   iam_database_authentication_enabled = true
 
+  # multi_az               = true
   db_subnet_group_name   = module.vpc.database_subnet_group
   vpc_security_group_ids = [module.security-group.security_group_id]
 
