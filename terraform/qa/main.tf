@@ -9,7 +9,7 @@ locals {
   name = "react-django-infra"
   cluster_name = "react-django-infra-eks-${random_string.suffix.result}"
   database_identifier = "react-django-infra-db"
-  database_name = "djangoBackend"
+  database_name = "backend"
 }
 
 resource "random_string" "suffix" {
@@ -81,7 +81,6 @@ module "eks" {
 
   eks_managed_node_group_defaults = {
     ami_type = "AL2_x86_64"
-
   }
 
   eks_managed_node_groups = {
@@ -135,11 +134,14 @@ module "db" {
   allocated_storage = 20 # 20 GB
   # max_allocated_storage = 100
 
+  manage_master_user_password = false
+  iam_database_authentication_enabled = false
+  skip_final_snapshot = true
+
   db_name = local.database_name
   username = "root"
+  password = "password"
   port = "3306"
-
-  iam_database_authentication_enabled = true
 
   # multi_az               = true
   db_subnet_group_name   = module.vpc.database_subnet_group

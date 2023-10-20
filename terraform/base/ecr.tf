@@ -1,5 +1,5 @@
 resource "aws_ecr_repository" "main" {
-  name                 = "react-django-infra"
+  name                 = "web-apps-infra"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {

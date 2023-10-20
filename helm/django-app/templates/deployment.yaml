@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app-qa
+  namespace: django-qa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: django-app
+  template:
+    metadata:
+      labels:
+        app: django-app
+    spec:
+      containers:
+      - name: django-app
+        image: {{.Values.image.repository}}:{{.Values.image.tag}}
+        env:
+        - name: MYSQL_DATABASE
+          value: "backend"
+        - name: MYSQL_USER
+          value: "root"
+        - name: MYSQL_PASSWORD
+          value: "password"
+        - name: MYSQL_HOST
+          value: "react-django-infra-db.csgsoduiabsg.us-east-1.rds.amazonaws.com"
+        - name: MYSQL_PORT
+          value: "3306"
+        ports:
+        - containerPort: 80
+        - containerPort: 443
+        - containerPort: 8000
+        command: ["/bin/sh", "-c"]
+        args:
+          - python manage.py runserver 0.0.0.0:8000
+        livenessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 8000
+        readinessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 8000
+          timeoutSeconds: 5
+          initialDelaySeconds: 60
+          periodSeconds: 10
