@@ -1,0 +1,45 @@
+name: Provision Terraform
+
+on:
+  workflow_dispatch:
+    inputs:
+      component:
+        type: choice
+        description: component to provision
+        options:
+        - base
+        - django-qa
+      dry_run:
+        type: boolean
+        default: true
+        description: dry-run only
+        
+jobs:
+  provision-terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+      - name: terraform init
+        working-directory: "terraform/${{ github.event.inputs.component }}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terraform init
+      - name: terraform plan
+        working-directory: "terraform/${{ github.event.inputs.component }}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set -x
+          terraform plan
+      - name: terraform apply
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        working-directory: "terraform/${{ github.event.inputs.component }}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set -x
+          terraform apply -auto-approve

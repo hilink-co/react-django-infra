@@ -1,0 +1,39 @@
+name: Deploy Helm
+
+on:
+  workflow_dispatch:
+    inputs:
+      chart:
+        type: choice
+        description: helm chart to deploy
+        options:
+        - django-app
+      version:
+        type: string
+        description: e.g. 'v1.0.0'
+        required: true
+
+jobs:
+  deploy-helm:
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: azure/setup-helm@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # provisioned by react-django-infra
+          # module.github-oidc.oidc_role
+          role-to-assume: ${{ secrets.AWS_OIDC_PROVIDER_ROLE }} 
+          aws-region: us-east-1
+      - name: helm upgrade
+        working-directory: "helm/${{ github.event.inputs.chart }}"
+        env:
+          HELM_CHART: ${{ github.event.inputs.chart }}
+          VERSION: ${{ github.event.inputs.version }}
+        run: |
+          set -x
+          helm upgrade --set image.tag=${VERSION} ${HELM_CHART} .
