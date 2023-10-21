@@ -5,7 +5,7 @@ module "github-oidc" {
   create_oidc_provider = true
   create_oidc_role     = true
 
-  repositories              = ["hilink-co/react-django-apps"]
+  repositories              = ["marshallshen/react-django-apps"]
   oidc_role_attach_policies = [
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess",
     "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
