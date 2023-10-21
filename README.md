@@ -1,1 +1,1 @@
-# react-django-infra
+# web-apps-infra
