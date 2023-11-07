@@ -1,9 +1,9 @@
 resource "aws_s3_bucket" "web-versioning" {
-  bucket = "web-apps-infra"
+  bucket = "web-apps-infra-web-versioning"
   
 
   tags = {
-    Name = "web-apps-infra"
+    Name = "web-apps-infra-web-versioning"
   }
 }
 
