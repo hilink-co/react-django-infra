@@ -1,0 +1,39 @@
+name: Deploy S3 Static
+
+on:
+  workflow_dispatch:
+    inputs:
+      chart:
+        type: choice
+        description: s3 static to deploy
+        options:
+        - react-app
+      version:
+        type: string
+        description: e.g. 'v1.0.0'
+        required: true
+
+env:
+  REACT_APP_VERSION_BUCKET: web-apps-infra-web-versioning
+  REACT_APP_APPLICATION_BUCKET: uat.hilinkdev.com
+
+jobs:
+  deploy-s3-static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # provisioned by web-apps-infra
+          # module.github-oidc.oidc_role
+          role-to-assume: ${{ secrets.AWS_OIDC_PROVIDER_ROLE }} 
+          aws-region: us-east-1
+
+      - name: Upload files to S3
+        env:
+          SOURCE: "${{ env.REACT_APP_VERSION_BUCKET }}/${{ github.event.inputs.version }}"
+          DESITINATION: "${{ env.REACT_APP_APPLICATION_BUCKET }}"
+          
+        run: |
+          aws s3 sync s3://${SOURCE} s3://${DESITINATION}
