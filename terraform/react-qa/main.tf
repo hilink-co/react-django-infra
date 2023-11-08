@@ -50,14 +50,6 @@ module "main" {
 
   # Optional override for PriceClass, defaults to PriceClass_100
   cloudfront_price_class = "PriceClass_200"
-
-  # providers = {
-  #   aws.main       = "aws.main"
-  #   aws.cloudfront = "aws.cloudfront"
-  # }
-
-  # Optional WAF Web ACL ID, defaults to none.
-  # web_acl_id = "${data.terraform_remote_state.site.waf-web-acl-id}"
 }
 
 
@@ -72,11 +64,6 @@ resource "aws_acm_certificate" "cert" {
 resource "aws_route53_record" "cert_validation" {
   for_each = {
     for dvo in aws_acm_certificate.cert.domain_validation_options : dvo.domain_name => {
-      # name     = "${option.resource_record_name}"
-      # type     = "${option.resource_record_type}"
-      # zone_id  = "${data.aws_route53_zone.main.id}"
-      # records  = [option.resource_record_value]
-      # ttl      = 60
       name   = dvo.resource_record_name
       record = dvo.resource_record_value
       type   = dvo.resource_record_type
@@ -88,11 +75,9 @@ resource "aws_route53_record" "cert_validation" {
   ttl             = 60
   type            = each.value.type
   zone_id         = "${data.aws_route53_zone.main.id}"
-  # provider = "aws.cloudfront"
 }
 
 resource "aws_acm_certificate_validation" "cert" {
-  # provider                = "aws.cloudfront"
   certificate_arn         = "${aws_acm_certificate.cert.arn}"
   validation_record_fqdns = [for validation in aws_route53_record.cert_validation : validation.fqdn]
 }
@@ -101,13 +86,11 @@ resource "aws_acm_certificate_validation" "cert" {
 # Route 53 record for the static site
 
 data "aws_route53_zone" "main" {
-  # provider     = "aws.main"
   name         = "${var.domain}"
   private_zone = false
 }
 
 resource "aws_route53_record" "web" {
-  # provider = "aws.main"
   zone_id  = "${data.aws_route53_zone.main.zone_id}"
   name     = "${var.fqdn}"
   type     = "A"
