@@ -1,15 +1,6 @@
 # AWS Region for S3 and other resources
 provider "aws" {
-  profile = "default"
-  region  = "us-west-2"
-  alias   = "main"
-}
-
-# AWS Region for Cloudfront (ACM certs only supports us-east-1)
-provider "aws" {
-  profile = "default"
   region  = "us-east-1"
-  alias   = "cloudfront"
 }
 
 # Variables
@@ -56,7 +47,6 @@ module "main" {
 # ACM Certificate generation
 
 resource "aws_acm_certificate" "cert" {
-  # provider          = "aws.cloudfront"
   domain_name       = "${var.fqdn}"
   validation_method = "DNS"
 }

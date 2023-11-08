@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        component: ['base', 'django-qa']
+        component: ['base', 'django-qa', 'react-qa']
     steps:
       - uses: actions/checkout@v3
       - uses: hashicorp/setup-terraform@v2

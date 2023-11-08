@@ -9,6 +9,7 @@ on:
         options:
         - base
         - django-qa
+        - react-qa
       dry_run:
         type: boolean
         default: true
