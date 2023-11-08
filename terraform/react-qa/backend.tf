@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     bucket = "web-apps-infra"
-    key    = "terraform/django-qa"
+    key    = "terraform/react-qa"
     region = "us-east-1"
   }
 }

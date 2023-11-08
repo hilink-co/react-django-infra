@@ -12,6 +12,7 @@ module "github-oidc" {
   oidc_role_attach_policies = [
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess",
     "arn:aws:iam::aws:policy/AmazonEKSServicePolicy",
-    "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+    "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
+    "arn:aws:iam::aws:policy/AmazonS3FullAccess" 
   ]
 }
