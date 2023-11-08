@@ -19,6 +19,9 @@ env:
 
 jobs:
   deploy-s3-static:
+    permissions:
+      contents: read
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
